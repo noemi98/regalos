@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lista de regalos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="page-bg" aria-hidden="true">
+    <div class="page-bg__gradient"></div>
+    <svg class="page-bg__stars-svg" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <pattern id="starPattern" width="160" height="160" patternUnits="userSpaceOnUse">
+          <text x="18" y="38" class="star-shape star-shape--md">✦</text>
+          <text x="95" y="72" class="star-shape star-shape--sm">✧</text>
+          <text x="52" y="128" class="star-shape star-shape--md">✦</text>
+          <text x="130" y="28" class="star-shape star-shape--xs">✦</text>
+          <circle cx="72" cy="38" r="1.5" class="star-dot"/>
+          <circle cx="28" cy="98" r="1" class="star-dot star-dot--soft"/>
+          <circle cx="118" cy="108" r="1.2" class="star-dot"/>
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#starPattern)"/>
+    </svg>
+    <div class="page-bg__float-stars">
+      <span class="float-star" style="--x:8%;--y:12%;--size:14px;--delay:0s">✦</span>
+      <span class="float-star" style="--x:22%;--y:68%;--size:10px;--delay:1.2s">✧</span>
+      <span class="float-star" style="--x:78%;--y:18%;--size:12px;--delay:0.6s">✦</span>
+      <span class="float-star" style="--x:88%;--y:72%;--size:9px;--delay:2s">✧</span>
+      <span class="float-star" style="--x:45%;--y:8%;--size:11px;--delay:1.8s">✦</span>
+      <span class="float-star" style="--x:62%;--y:88%;--size:13px;--delay:0.4s">✦</span>
+      <span class="float-star" style="--x:5%;--y:42%;--size:8px;--delay:2.4s">✧</span>
+      <span class="float-star" style="--x:92%;--y:45%;--size:10px;--delay:1s">✦</span>
+    </div>
+  </div>
+
+  <div class="auth-bar" id="authBar">
+    <div class="auth-bar__user hidden" id="userInfo">
+      <span class="auth-bar__greeting">Hola, <strong id="userName"></strong></span>
+      <button class="btn btn--ghost" id="logoutBtn" type="button">Cerrar sesión</button>
+    </div>
+    <button class="btn btn--primary" id="loginBtn" type="button">Iniciar sesión</button>
+  </div>
+
+  <div class="app">
+    <header class="page-header">
+      <div class="page-header__icon" aria-hidden="true">🎁</div>
+      <h1 class="page-header__title">Lista de regalos</h1>
+      <p class="page-header__subtitle">
+        Opciones de regalos para que el equipo elija. FELIZ CUMPLEAÑOS PARA MI .... 😇
+      </p>
+    </header>
+
+    <main class="content">
+      <section class="gifts-section">
+        <div class="gifts-toolbar">
+          <div class="gifts-toolbar__left">
+            <h2 class="gifts-toolbar__title">🎁 Regalos</h2>
+            <button class="btn btn--accent hidden" id="addGiftBtn" type="button">+ Registrar regalo</button>
+          </div>
+          <div class="gifts-toolbar__actions">
+            <button class="toolbar-btn" id="filterBtn" type="button" aria-label="Filtrar regalos" title="Filtrar">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <line x1="4" y1="6" x2="20" y2="6"/>
+                <line x1="8" y1="12" x2="16" y2="12"/>
+                <line x1="10" y1="18" x2="14" y2="18"/>
+              </svg>
+            </button>
+            <button class="toolbar-btn" id="sortBtn" type="button" aria-label="Ordenar regalos" title="Ordenar">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M7 15l5 5 5-5"/>
+                <path d="M7 9l5-5 5 5"/>
+              </svg>
+            </button>
+            <button class="toolbar-btn" id="searchBtn" type="button" aria-label="Buscar regalos" title="Buscar">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="7"/>
+                <line x1="16.5" y1="16.5" x2="21" y2="21"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="search-bar hidden" id="searchBar">
+          <input
+            type="search"
+            id="searchInput"
+            class="search-bar__input"
+            placeholder="Buscar regalo..."
+            autocomplete="off"
+          >
+        </div>
+
+        <div class="filter-panel hidden" id="filterPanel">
+          <label class="filter-option">
+            <input type="radio" name="filter" value="all" checked>
+            <span>Todos</span>
+          </label>
+          <label class="filter-option">
+            <input type="radio" name="filter" value="available">
+            <span>Disponibles</span>
+          </label>
+          <label class="filter-option">
+            <input type="radio" name="filter" value="reserved">
+            <span>Reservados</span>
+          </label>
+        </div>
+
+        <div class="gifts-grid" id="giftsGrid"></div>
+
+        <p class="empty-state hidden" id="emptyState">No se encontraron regalos.</p>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal hidden" id="loginModal" role="dialog" aria-labelledby="loginModalTitle" aria-modal="true">
+    <div class="modal__backdrop" data-close="loginModal"></div>
+    <div class="modal__content">
+      <button class="modal__close" type="button" data-close="loginModal" aria-label="Cerrar">&times;</button>
+      <h2 class="modal__title" id="loginModalTitle">Iniciar sesión</h2>
+      <form id="loginForm" class="form">
+        <label class="form__field">
+          <span>Usuario</span>
+          <input type="text" name="username" required autocomplete="username">
+        </label>
+        <label class="form__field">
+          <span>Contraseña</span>
+          <input type="password" name="password" required autocomplete="current-password">
+        </label>
+        <p class="form__error hidden" id="loginError"></p>
+        <button class="btn btn--primary btn--full" type="submit">Entrar</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal hidden" id="giftModal" role="dialog" aria-labelledby="giftModalTitle" aria-modal="true">
+    <div class="modal__backdrop" data-close="giftModal"></div>
+    <div class="modal__content">
+      <button class="modal__close" type="button" data-close="giftModal" aria-label="Cerrar">&times;</button>
+      <h2 class="modal__title" id="giftModalTitle">Registrar nuevo regalo</h2>
+      <form id="giftForm" class="form">
+        <input type="hidden" name="id" id="giftId" value="">
+        <label class="form__field">
+          <span>Nombre</span>
+          <input type="text" name="name" required placeholder="Ej. Mochila">
+        </label>
+        <label class="form__field">
+          <span>Precio (S/.)</span>
+          <input type="number" name="price" required min="0" step="0.01" placeholder="99.00">
+        </label>
+        <label class="form__field">
+          <span>Imagen del regalo</span>
+          <div class="image-upload" id="imageUpload" tabindex="0">
+            <input type="file" id="imageFile" name="image" accept="image/*" hidden>
+            <div class="image-upload__placeholder" id="imagePlaceholder">
+              <span class="image-upload__hint">Arrastra, selecciona o pega una imagen</span>
+              <span class="image-upload__subhint">Ctrl+V / Cmd+V también funciona</span>
+              <button type="button" class="btn btn--ghost btn--sm" id="selectImageBtn">Seleccionar archivo</button>
+            </div>
+            <div class="image-upload__preview hidden" id="imagePreview">
+              <img id="imagePreviewImg" alt="Vista previa">
+              <button type="button" class="image-upload__remove" id="removeImageBtn" aria-label="Quitar imagen">&times;</button>
+            </div>
+          </div>
+        </label>
+        <label class="form__field">
+          <span>URL de compra</span>
+          <input type="url" name="buyUrl" placeholder="https://...">
+        </label>
+        <label class="form__checkbox">
+          <input type="checkbox" name="reserved">
+          <span>Marcar como reservado</span>
+        </label>
+        <label class="form__field hidden" id="reservedByField">
+          <span>Reservado por</span>
+          <input type="text" name="reservedBy" placeholder="Nombre o nota">
+        </label>
+        <p class="form__error hidden" id="giftError"></p>
+        <button class="btn btn--primary btn--full" id="giftSubmitBtn" type="submit">Guardar regalo</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
