@@ -1,6 +1,6 @@
 const API_BASE = 'api';
 
-const DEFAULT_RESERVED_IMAGE = 'https://images.unsplash.com/photo-1513885535751-8b9238bd345a?w=600&h=450&fit=crop';
+const DEFAULT_RESERVED_IMAGE = 'assets/reserved-placeholder.png';
 
 let gifts = [];
 let shuffledOrder = [];
