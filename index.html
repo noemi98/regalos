@@ -112,6 +112,31 @@
           </label>
         </div>
 
+        <section class="favorites-section hidden" id="favoritesSection" aria-label="Regalos favoritos">
+          <div class="favorites-section__accent" aria-hidden="true"></div>
+          <div class="favorites-section__header">
+            <span class="favorites-section__heart" aria-hidden="true">♥</span>
+            <div class="favorites-section__titles">
+              <h3 class="favorites-section__title">Mis favoritos</h3>
+              <p class="favorites-section__subtitle">Lo que más me encantaría recibir</p>
+            </div>
+            <span class="favorites-section__heart" aria-hidden="true">♥</span>
+          </div>
+          <div class="favorites-section__decor" aria-hidden="true">
+            <span class="favorites-section__float-heart" style="--x:6%;--y:18%;--size:11px;--delay:0s">♥</span>
+            <span class="favorites-section__float-heart" style="--x:88%;--y:22%;--size:9px;--delay:1.2s">♥</span>
+            <span class="favorites-section__float-heart" style="--x:92%;--y:78%;--size:10px;--delay:0.6s">♥</span>
+            <span class="favorites-section__float-heart" style="--x:4%;--y:72%;--size:8px;--delay:1.8s">♥</span>
+          </div>
+          <div class="favorites-section__grid" id="favoritesGrid"></div>
+        </section>
+
+        <div class="gifts-divider hidden" id="giftsDivider" aria-hidden="true">
+          <span class="gifts-divider__line"></span>
+          <span class="gifts-divider__label">Otros regalos</span>
+          <span class="gifts-divider__line"></span>
+        </div>
+
         <div class="gifts-grid" id="giftsGrid"></div>
 
         <p class="empty-state hidden" id="emptyState">No se encontraron regalos.</p>

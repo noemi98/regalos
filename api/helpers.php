@@ -72,6 +72,7 @@ function mapGiftRow(array $row): array
         'name' => $row['nombre'],
         'price' => (float) $row['precio'],
         'enabled' => (bool) ($row['habilitado'] ?? 1),
+        'favorite' => (bool) ($row['favorito'] ?? 0),
         'reserved' => (bool) $row['reservado'],
         'reservedBy' => $row['reservado_por'],
         'creatorName' => $row['creador_nombre'] ?? null,

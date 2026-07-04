@@ -11,6 +11,9 @@ let currentFilter = 'all';
 let searchQuery = '';
 
 const grid = document.getElementById('giftsGrid');
+const favoritesSection = document.getElementById('favoritesSection');
+const favoritesGrid = document.getElementById('favoritesGrid');
+const giftsDivider = document.getElementById('giftsDivider');
 const emptyState = document.getElementById('emptyState');
 const searchBar = document.getElementById('searchBar');
 const searchInput = document.getElementById('searchInput');
@@ -254,6 +257,9 @@ function openEditGiftModal(gift) {
 
 async function loadGifts() {
   grid.innerHTML = '<p class="loading-state">Cargando regalos...</p>';
+  favoritesSection.classList.add('hidden');
+  favoritesGrid.innerHTML = '';
+  giftsDivider.classList.add('hidden');
 
   try {
     const data = await apiRequest('gifts.php');
@@ -290,6 +296,12 @@ function getFilteredGifts() {
     result.sort((a, b) => (orderMap.get(a.id) ?? 0) - (orderMap.get(b.id) ?? 0));
   }
 
+  if (currentUser) {
+    const enabled = result.filter((g) => g.enabled);
+    const disabled = result.filter((g) => !g.enabled);
+    result = [...enabled, ...disabled];
+  }
+
   return result;
 }
 
@@ -298,33 +310,75 @@ function getReservedLabel(gift) {
   return `RESERVADO: ${name}`;
 }
 
-function renderGiftCard(gift) {
+function renderGiftCard(gift, { inFavorites = false } = {}) {
   const isEditable = Boolean(currentUser);
-  const imageSrc = gift.reserved ? DEFAULT_RESERVED_IMAGE : (gift.images[0] || DEFAULT_RESERVED_IMAGE);
+  const realImageSrc = gift.images[0] || DEFAULT_RESERVED_IMAGE;
+  const usePeekImage = inFavorites && gift.reserved && !isEditable;
 
-  const footer = gift.reserved
-    ? `<span class="badge-reserved">${getReservedLabel(gift)}</span>`
-    : `<span class="gift-card__price">${formatPrice(gift.price)}</span>
-       <a href="${gift.buyUrl || '#'}" class="gift-card__buy" target="_blank" rel="noopener">Comprar</a>`;
+  let imageHtml;
+  if (usePeekImage) {
+    imageHtml = `
+      <img
+        class="gift-card__image gift-card__image--cover"
+        src="${DEFAULT_RESERVED_IMAGE}"
+        alt="${gift.name}"
+        loading="lazy"
+      >
+      <img
+        class="gift-card__image gift-card__image--peek"
+        src="${realImageSrc}"
+        alt=""
+        loading="lazy"
+        aria-hidden="true"
+      >
+    `;
+  } else {
+    const showRealImage = isEditable || !gift.reserved;
+    const imageSrc = showRealImage ? realImageSrc : DEFAULT_RESERVED_IMAGE;
+    imageHtml = `
+      <img
+        class="gift-card__image"
+        src="${imageSrc}"
+        alt="${gift.name}"
+        loading="lazy"
+      >
+    `;
+  }
+
+  let footer;
+  if (gift.reserved) {
+    footer = `<span class="badge-reserved">${getReservedLabel(gift)}</span>`;
+  } else if (inFavorites) {
+    footer = `<span class="gift-card__price">${formatPrice(gift.price)}</span>`;
+  } else {
+    footer = `
+      <span class="gift-card__price">${formatPrice(gift.price)}</span>
+      <a href="${gift.buyUrl || '#'}" class="gift-card__buy" target="_blank" rel="noopener">Comprar</a>
+    `;
+  }
+
+  const disabledBadge = isEditable && !gift.enabled
+    ? '<span class="badge-disabled">Deshabilitado</span>'
+    : '';
 
   const cardClasses = [
     'gift-card',
     gift.reserved ? 'gift-card--reserved' : '',
     !gift.enabled ? 'gift-card--disabled' : '',
     isEditable ? 'gift-card--editable' : '',
+    inFavorites ? 'gift-card--favorite' : '',
+    usePeekImage ? 'gift-card--peek-image' : '',
   ].filter(Boolean).join(' ');
 
   return `
     <article class="${cardClasses}" data-id="${gift.id}">
       <div class="gift-card__image-wrap">
-        <img
-          class="gift-card__image"
-          src="${imageSrc}"
-          alt="${gift.name}"
-          loading="lazy"
-        >
+        ${disabledBadge}
+        ${inFavorites ? '<span class="gift-card__heart" aria-hidden="true">♥</span>' : ''}
+        ${imageHtml}
       </div>
       <div class="gift-card__body">
+        ${inFavorites ? '<span class="gift-card__favorite-tag">Favorito</span>' : ''}
         <h3 class="gift-card__name">${gift.name}</h3>
         <div class="gift-card__footer">${footer}</div>
       </div>
@@ -334,6 +388,19 @@ function renderGiftCard(gift) {
 
 function render() {
   const filtered = getFilteredGifts();
+  const favorites = filtered.filter((g) => g.favorite);
+  const regular = filtered.filter((g) => !g.favorite);
+
+  if (favorites.length > 0) {
+    favoritesSection.classList.remove('hidden');
+    favoritesGrid.innerHTML = favorites.map((g) => renderGiftCard(g, { inFavorites: true })).join('');
+  } else {
+    favoritesSection.classList.add('hidden');
+    favoritesGrid.innerHTML = '';
+  }
+
+  const showDivider = favorites.length > 0 && regular.length > 0;
+  giftsDivider.classList.toggle('hidden', !showDivider);
 
   if (filtered.length === 0) {
     grid.innerHTML = '';
@@ -342,7 +409,7 @@ function render() {
   }
 
   emptyState.classList.add('hidden');
-  grid.innerHTML = filtered.map(renderGiftCard).join('');
+  grid.innerHTML = regular.map((g) => renderGiftCard(g)).join('');
 }
 
 function togglePanel(panel, btn) {
@@ -546,6 +613,17 @@ filterPanel.addEventListener('change', (e) => {
 });
 
 grid.addEventListener('click', (e) => {
+  if (e.target.closest('.gift-card__buy')) return;
+
+  const card = e.target.closest('.gift-card--editable');
+  if (!card || !currentUser) return;
+
+  const id = Number(card.dataset.id);
+  const gift = gifts.find((g) => g.id === id);
+  if (gift) openEditGiftModal(gift);
+});
+
+favoritesGrid.addEventListener('click', (e) => {
   if (e.target.closest('.gift-card__buy')) return;
 
   const card = e.target.closest('.gift-card--editable');
