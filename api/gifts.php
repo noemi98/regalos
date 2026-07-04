@@ -6,13 +6,17 @@ require_once __DIR__ . '/helpers.php';
 $method = $_SERVER['REQUEST_METHOD'];
 
 if ($method === 'GET') {
+    startSession();
     $pdo = getDb();
-    $stmt = $pdo->query(
-        'SELECT r.*, u.nombre AS creador_nombre
-         FROM regalos r
-         LEFT JOIN usuarios u ON r.creado_por = u.id
-         ORDER BY r.id ASC'
-    );
+    $onlyEnabled = empty($_SESSION['user']);
+    $sql = 'SELECT r.*, u.nombre AS creador_nombre
+            FROM regalos r
+            LEFT JOIN usuarios u ON r.creado_por = u.id';
+    if ($onlyEnabled) {
+        $sql .= ' WHERE r.habilitado = 1';
+    }
+    $sql .= ' ORDER BY r.id ASC';
+    $stmt = $pdo->query($sql);
     $rows = $stmt->fetchAll();
 
     jsonResponse([
@@ -35,6 +39,7 @@ if ($method === 'POST') {
     $imagenUrl = trim($data['imageUrl'] ?? $data['imagen_url'] ?? '');
     $urlCompra = trim($data['buyUrl'] ?? $data['url_compra'] ?? '#');
     $reservado = !empty($data['reserved'] ?? $data['reservado'] ?? false) ? 1 : 0;
+    $habilitado = !empty($data['habilitado'] ?? $data['enabled'] ?? true) ? 1 : 0;
     $reservadoPor = trim($data['reservedBy'] ?? $data['reservado_por'] ?? '');
     if ($reservado && $reservadoPor === '') {
         $reservadoPor = $user['nombre'];
@@ -72,7 +77,8 @@ if ($method === 'POST') {
                  imagen_url = :imagen_url,
                  url_compra = :url_compra,
                  reservado = :reservado,
-                 reservado_por = :reservado_por
+                 reservado_por = :reservado_por,
+                 habilitado = :habilitado
              WHERE id = :id'
         );
 
@@ -84,6 +90,7 @@ if ($method === 'POST') {
             'url_compra' => $urlCompra !== '' ? $urlCompra : '#',
             'reservado' => $reservado,
             'reservado_por' => $reservadoPor !== '' ? $reservadoPor : null,
+            'habilitado' => $habilitado,
         ]);
     } else {
         if (!empty($_FILES['image']) && $_FILES['image']['error'] !== UPLOAD_ERR_NO_FILE) {
@@ -91,8 +98,8 @@ if ($method === 'POST') {
         }
 
         $stmt = $pdo->prepare(
-            'INSERT INTO regalos (nombre, precio, imagen_url, url_compra, reservado, reservado_por, creado_por)
-             VALUES (:nombre, :precio, :imagen_url, :url_compra, :reservado, :reservado_por, :creado_por)'
+            'INSERT INTO regalos (nombre, precio, imagen_url, url_compra, reservado, reservado_por, creado_por, habilitado)
+             VALUES (:nombre, :precio, :imagen_url, :url_compra, :reservado, :reservado_por, :creado_por, :habilitado)'
         );
 
         $stmt->execute([
@@ -103,6 +110,7 @@ if ($method === 'POST') {
             'reservado' => $reservado,
             'reservado_por' => $reservadoPor !== '' ? $reservadoPor : null,
             'creado_por' => $user['id'],
+            'habilitado' => 1,
         ]);
 
         $id = (int) $pdo->lastInsertId();

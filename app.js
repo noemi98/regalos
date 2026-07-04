@@ -36,6 +36,7 @@ const giftSubmitBtn = document.getElementById('giftSubmitBtn');
 const giftIdInput = document.getElementById('giftId');
 const giftError = document.getElementById('giftError');
 const reservedByField = document.getElementById('reservedByField');
+const disabledField = document.getElementById('disabledField');
 
 const imageUpload = document.getElementById('imageUpload');
 const imageFile = document.getElementById('imageFile');
@@ -203,6 +204,7 @@ function resetGiftForm() {
   giftForm.reset();
   clearImageSelection();
   reservedByField.classList.add('hidden');
+  disabledField.classList.add('hidden');
   giftModalTitle.textContent = 'Registrar nuevo regalo';
   giftSubmitBtn.textContent = 'Guardar regalo';
 }
@@ -239,6 +241,9 @@ function openEditGiftModal(gift) {
     giftForm.querySelector('[name="reservedBy"]').value = gift.reservedBy || '';
   }
 
+  disabledField.classList.remove('hidden');
+  giftForm.querySelector('[name="disabled"]').checked = !gift.enabled;
+
   if (gift.imageUrl) {
     setImagePreviewFromUrl(gift.imageUrl);
   }
@@ -261,7 +266,7 @@ async function loadGifts() {
 }
 
 function getFilteredGifts() {
-  let result = [...gifts];
+  let result = currentUser ? [...gifts] : gifts.filter((g) => g.enabled);
 
   if (currentFilter === 'available') {
     result = result.filter((g) => !g.reserved);
@@ -305,6 +310,7 @@ function renderGiftCard(gift) {
   const cardClasses = [
     'gift-card',
     gift.reserved ? 'gift-card--reserved' : '',
+    !gift.enabled ? 'gift-card--disabled' : '',
     isEditable ? 'gift-card--editable' : '',
   ].filter(Boolean).join(' ');
 
@@ -365,6 +371,7 @@ logoutBtn.addEventListener('click', async () => {
     await apiRequest('logout.php', { method: 'POST' });
     currentUser = null;
     updateAuthUI();
+    await loadGifts();
   } catch (error) {
     alert(error.message);
   }
@@ -388,6 +395,7 @@ loginForm.addEventListener('submit', async (e) => {
 
     currentUser = data.user;
     updateAuthUI();
+    await loadGifts();
     closeModal(loginModal);
     loginForm.reset();
   } catch (error) {
@@ -470,6 +478,9 @@ giftForm.addEventListener('submit', async (e) => {
   const isEditing = Boolean(editingGiftId);
   if (isEditing) {
     formData.set('id', String(editingGiftId));
+    const disabled = formData.get('disabled') === 'on';
+    formData.delete('disabled');
+    formData.append('habilitado', disabled ? '0' : '1');
   }
 
   try {

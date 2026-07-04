@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS regalos (
     imagenes_extra JSON NULL COMMENT 'URLs adicionales para carrusel',
     url_compra VARCHAR(500) DEFAULT '#',
     reservado TINYINT(1) NOT NULL DEFAULT 0,
+    habilitado TINYINT(1) NOT NULL DEFAULT 1,
     reservado_por VARCHAR(255) NULL,
     creado_por INT UNSIGNED NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
