@@ -32,6 +32,18 @@ CREATE TABLE IF NOT EXISTS regalos (
         ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Configuración global
+CREATE TABLE IF NOT EXISTS configuracion (
+    clave VARCHAR(50) PRIMARY KEY,
+    valor VARCHAR(255) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO configuracion (clave, valor)
+SELECT 'mostrar_imagenes_invitados', '1'
+WHERE NOT EXISTS (
+    SELECT 1 FROM configuracion WHERE clave = 'mostrar_imagenes_invitados'
+);
+
 -- Usuario de ejemplo (password: admin123)
 -- La contraseña está hasheada con bcrypt
 INSERT INTO usuarios (nombre, username, password)

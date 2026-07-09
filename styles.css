@@ -119,7 +119,7 @@ body {
 .app {
   position: relative;
   z-index: 1;
-  max-width: 720px;
+  max-width: 960px;
   margin: 0 auto;
   padding: 32px 20px 48px;
 }
@@ -353,16 +353,10 @@ body {
 
 .favorites-section__grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: 1fr;
   gap: 14px;
   position: relative;
   z-index: 1;
-}
-
-@media (max-width: 480px) {
-  .favorites-section__grid {
-    grid-template-columns: 1fr;
-  }
 }
 
 /* Divider between favorites and rest */
@@ -474,13 +468,21 @@ body {
 /* Grid */
 .gifts-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: 1fr;
   gap: 16px;
 }
 
-@media (max-width: 480px) {
-  .gifts-grid {
-    grid-template-columns: 1fr;
+@media (min-width: 520px) {
+  .gifts-grid,
+  .favorites-section__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 860px) {
+  .gifts-grid,
+  .favorites-section__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
@@ -734,11 +736,12 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: 16px;
+  overflow-y: auto;
 }
 
 .modal__backdrop {
-  position: absolute;
+  position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.35);
 }
@@ -747,11 +750,15 @@ body {
   position: relative;
   width: 100%;
   max-width: 420px;
+  max-height: calc(100dvh - 32px);
   background: var(--surface);
   border-radius: var(--radius);
   padding: 28px 24px 24px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
   animation: slideDown 0.2s ease;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: auto;
 }
 
 .modal__close {
@@ -764,6 +771,7 @@ body {
   line-height: 1;
   color: var(--text-muted);
   cursor: pointer;
+  z-index: 1;
 }
 
 .modal__title {
@@ -788,6 +796,8 @@ body {
 }
 
 .form__field input {
+  width: 100%;
+  max-width: 100%;
   padding: 10px 12px;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -905,4 +915,60 @@ body {
 
 .image-upload__remove:hover {
   background: rgba(0, 0, 0, 0.75);
+}
+
+@media (max-width: 519px) {
+  .app {
+    padding: 24px 16px 40px;
+  }
+
+  .page-header__title {
+    font-size: 1.65rem;
+  }
+
+  .gifts-toolbar {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .auth-bar {
+    top: 12px;
+    right: 12px;
+    left: 12px;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+
+  .modal {
+    padding: 0;
+    align-items: flex-end;
+  }
+
+  .modal__content {
+    max-width: none;
+    max-height: 94dvh;
+    border-radius: var(--radius) var(--radius) 0 0;
+    padding: 20px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .modal__title {
+    font-size: 1.1rem;
+    padding-right: 28px;
+  }
+
+  .image-upload {
+    min-height: 120px;
+  }
+
+  .image-upload__preview {
+    height: 140px;
+  }
+
+  .gift-card__body {
+    padding: 12px 14px 14px;
+  }
+
+  .gift-card__name {
+    font-size: 0.95rem;
+  }
 }

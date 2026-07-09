@@ -9,6 +9,7 @@ let editingGiftId = null;
 let sortOrder = 'default';
 let currentFilter = 'all';
 let searchQuery = '';
+let showImagesForGuests = true;
 
 const grid = document.getElementById('giftsGrid');
 const favoritesSection = document.getElementById('favoritesSection');
@@ -27,6 +28,7 @@ const logoutBtn = document.getElementById('logoutBtn');
 const userInfo = document.getElementById('userInfo');
 const userName = document.getElementById('userName');
 const addGiftBtn = document.getElementById('addGiftBtn');
+const toggleImagesBtn = document.getElementById('toggleImagesBtn');
 
 const loginModal = document.getElementById('loginModal');
 const loginForm = document.getElementById('loginForm');
@@ -86,15 +88,24 @@ function shuffleArray(items) {
   return arr;
 }
 
+function updateToggleImagesBtn() {
+  if (!currentUser) return;
+  toggleImagesBtn.textContent = showImagesForGuests
+    ? 'Ocultar imágenes a invitados'
+    : 'Mostrar imágenes a invitados';
+}
+
 function updateAuthUI() {
   const isLoggedIn = Boolean(currentUser);
 
   loginBtn.classList.toggle('hidden', isLoggedIn);
   userInfo.classList.toggle('hidden', !isLoggedIn);
   addGiftBtn.classList.toggle('hidden', !isLoggedIn);
+  toggleImagesBtn.classList.toggle('hidden', !isLoggedIn);
 
   if (isLoggedIn) {
     userName.textContent = currentUser.nombre;
+    updateToggleImagesBtn();
   }
 
   render();
@@ -264,6 +275,10 @@ async function loadGifts() {
   try {
     const data = await apiRequest('gifts.php');
     gifts = data.gifts || [];
+    if ('showImagesForGuests' in data) {
+      showImagesForGuests = Boolean(Number(data.showImagesForGuests));
+      updateToggleImagesBtn();
+    }
     shuffledOrder = shuffleArray(gifts.map((g) => g.id));
     render();
   } catch (error) {
@@ -313,7 +328,7 @@ function getReservedLabel(gift) {
 function renderGiftCard(gift, { inFavorites = false } = {}) {
   const isEditable = Boolean(currentUser);
   const realImageSrc = gift.images[0] || DEFAULT_RESERVED_IMAGE;
-  const usePeekImage = inFavorites && gift.reserved && !isEditable;
+  const usePeekImage = inFavorites && gift.reserved && !isEditable && !showImagesForGuests;
 
   let imageHtml;
   if (usePeekImage) {
@@ -333,7 +348,7 @@ function renderGiftCard(gift, { inFavorites = false } = {}) {
       >
     `;
   } else {
-    const showRealImage = isEditable || !gift.reserved;
+    const showRealImage = isEditable || showImagesForGuests;
     const imageSrc = showRealImage ? realImageSrc : DEFAULT_RESERVED_IMAGE;
     imageHtml = `
       <img
@@ -471,6 +486,20 @@ loginForm.addEventListener('submit', async (e) => {
 });
 
 addGiftBtn.addEventListener('click', openCreateGiftModal);
+
+toggleImagesBtn.addEventListener('click', async () => {
+  try {
+    const data = await apiRequest('settings.php', {
+      method: 'POST',
+      body: JSON.stringify({ showImagesForGuests: !showImagesForGuests }),
+    });
+    showImagesForGuests = data.showImagesForGuests;
+    updateToggleImagesBtn();
+    render();
+  } catch (error) {
+    alert(error.message);
+  }
+});
 
 selectImageBtn.addEventListener('click', (e) => {
   e.stopPropagation();

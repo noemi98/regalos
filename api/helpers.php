@@ -48,6 +48,29 @@ function verifyPassword(string $plain, string $stored): bool
     return hash_equals($stored, $plain);
 }
 
+function getShowImagesForGuests(PDO $pdo): bool
+{
+    try {
+        $stmt = $pdo->query(
+            "SELECT valor FROM configuracion WHERE clave = 'mostrar_imagenes_invitados' LIMIT 1"
+        );
+        $row = $stmt->fetch();
+        return $row ? (bool) (int) $row['valor'] : true;
+    } catch (Throwable) {
+        return true;
+    }
+}
+
+function setShowImagesForGuests(PDO $pdo, bool $value): void
+{
+    $stmt = $pdo->prepare(
+        "INSERT INTO configuracion (clave, valor)
+         VALUES ('mostrar_imagenes_invitados', :valor)
+         ON DUPLICATE KEY UPDATE valor = VALUES(valor)"
+    );
+    $stmt->execute(['valor' => $value ? '1' : '0']);
+}
+
 function mapGiftRow(array $row): array
 {
     $images = [];

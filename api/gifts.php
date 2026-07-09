@@ -22,6 +22,7 @@ if ($method === 'GET') {
     jsonResponse([
         'ok' => true,
         'gifts' => array_map('mapGiftRow', $rows),
+        'showImagesForGuests' => getShowImagesForGuests($pdo),
     ]);
 }
 
